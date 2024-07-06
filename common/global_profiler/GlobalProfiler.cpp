@@ -37,6 +37,7 @@ u64 get_current_ts() {
 GlobalProfiler::GlobalProfiler() {
   m_t0 = get_current_ts();
   m_nodes.resize(m_max_events);
+  set_max_events(65536 * 4);
 }
 
 void GlobalProfiler::update_event_buffer_size(size_t new_size) {
