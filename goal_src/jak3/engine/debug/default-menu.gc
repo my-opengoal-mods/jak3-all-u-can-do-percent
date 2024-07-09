@@ -891,11 +891,49 @@
 
 (defun dm-game-secret-toggle-pick-func ((arg0 int) (arg1 debug-menu-msg))
   (when (= arg1 (debug-menu-msg press))
+  (format #t "~D FART~%" arg0)
     (logxor! (-> *game-info* secrets) (the-as uint (ash 1 (/ arg0 8))))
     (update-task-masks 'event)
     )
   (logtest? (-> *game-info* secrets) (ash 1 (/ arg0 8)))
   )
+
+
+(defun unlock-secrets-hero-mode ()
+  (logxor! (-> *game-info* secrets) (the-as uint (ash 1 (/ 0 8))))
+  (update-task-masks 'event)
+  (logtest? (-> *game-info* secrets) (ash 1 (/ 0 8)))
+
+  (logxor! (-> *game-info* secrets) (the-as uint (ash 1 (/ 128 8))))
+  (update-task-masks 'event)
+  (logtest? (-> *game-info* secrets) (ash 1 (/ 128 8)))
+
+  (logxor! (-> *game-info* secrets) (the-as uint (ash 1 (/ 136 8))))
+  (update-task-masks 'event)
+  (logtest? (-> *game-info* secrets) (ash 1 (/ 136 8)))
+
+  (logxor! (-> *game-info* secrets) (the-as uint (ash 1 (/ 144 8))))
+  (update-task-masks 'event)
+  (logtest? (-> *game-info* secrets) (ash 1 (/ 144 8)))
+
+  (logxor! (-> *game-info* secrets) (the-as uint (ash 1 (/ 152 8))))
+  (update-task-masks 'event)
+  (logtest? (-> *game-info* secrets) (ash 1 (/ 152 8)))
+
+  (logxor! (-> *game-info* secrets) (the-as uint (ash 1 (/ 216 8))))
+  (update-task-masks 'event)
+  (logtest? (-> *game-info* secrets) (ash 1 (/ 216 8)))
+
+  (logxor! (-> *game-info* secrets) (the-as uint (ash 1 (/ 224 8))))
+  (update-task-masks 'event)
+  (logtest? (-> *game-info* secrets) (ash 1 (/ 224 8)))
+
+  (logxor! (-> *game-info* secrets) (the-as uint (ash 1 (/ 232 8))))
+  (update-task-masks 'event)
+  (logtest? (-> *game-info* secrets) (ash 1 (/ 232 8)))
+  (none)
+  )
+
 
 (defun display-scene-control-toggle-pick-func ((arg0 int) (arg1 debug-menu-msg))
   (if (= arg1 (debug-menu-msg press))
@@ -1302,8 +1340,10 @@
       (set! *display-profile* s5-0)
       )
     (set! *debug-menu-scene-play* #t)
+    (format #t "~A~% FART~%" arg0)
     (let ((s5-1 (car (cdr arg0))))
-      (process-spawn scene-player :init scene-player-init s5-1 #t (car arg0) :name "scene-player")
+    (format #t "~A~% " s5-1)
+      (process-spawn scene-player :init scene-player-init '("desert-final-boss-res" "desert-final-boss-res-b" "arena-outro") #t (car '("desert-final-boss-res-movie-a" ("desert-final-boss-res" "desert-final-boss-res-b" "arena-outro"))) :name "scene-player")
       )
     (debug-menu-context-send-msg *debug-menu-context* (debug-menu-msg deactivate) (debug-menu-dest activation))
     (set-master-mode 'game)
