@@ -46,8 +46,6 @@ std::string ltrim(const std::string& s) {
   return (start == std::string::npos) ? "" : s.substr(start);
 }
 
-// TODO - used a lot in formatting, and its slow because i bet it iterates from the start and not
-// the end
 std::string rtrim(const std::string& s) {
   size_t end = s.find_last_not_of(WHITESPACE);
   return (end == std::string::npos) ? "" : s.substr(0, end + 1);
@@ -102,6 +100,22 @@ std::string diff(const std::string& lhs, const std::string& rhs) {
 /// Default splits on \n characters
 std::vector<std::string> split(const ::std::string& str, char delimiter) {
   return google_diff::split_string(str, delimiter);
+}
+
+std::vector<std::string> split_string(const std::string& str, const std::string& delimiter) {
+  std::vector<std::string> parsed;
+  std::string::size_type pos = 0;
+  while (true) {
+    const std::string::size_type found = str.find(delimiter, pos);
+    if (found == std::string::npos) {
+      parsed.push_back(str.substr(pos));
+      break;
+    } else {
+      parsed.push_back(str.substr(pos, found - pos));
+      pos = found + delimiter.length();
+    }
+  }
+  return parsed;
 }
 
 std::vector<std::string> regex_get_capture_groups(const std::string& str,
@@ -207,7 +221,37 @@ std::string to_lower(const std::string& str) {
   std::transform(str.begin(), str.end(), new_str.begin(), ::tolower);
   return new_str;
 }
+
 bool hex_char(char c) {
   return !((c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F'));
+}
+
+std::string titlize(const std::string& str) {
+  // Iterate through the string, capitalizing any character that either comes first, or is preceeded
+  // by whitespace
+  const auto trimmed_string = trim(str);
+  std::string new_str = "";
+  bool capitalize_next_char = true;
+  for (const auto& character : trimmed_string) {
+    if (capitalize_next_char) {
+      new_str.push_back(toupper(character));
+      capitalize_next_char = false;
+    } else {
+      if (character == ' ') {
+        capitalize_next_char = true;
+      }
+      new_str.push_back(character);
+    }
+  }
+  return new_str;
+}
+
+std::string pad_right(const std::string& input, const int width, const char padding_char) {
+  if ((int)input.length() >= width) {
+    return input;  // No need to pad if input length is already greater or equal to width
+  } else {
+    int padding_width = width - input.length();
+    return input + std::string(padding_width, padding_char);
+  }
 }
 }  // namespace str_util

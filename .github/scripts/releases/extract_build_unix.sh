@@ -15,10 +15,6 @@ if [ "$PREP_BIN" = "true" ]; then
   cp $BIN_SOURCE/goalc/goalc $DEST
   cp $BIN_SOURCE/decompiler/extractor $DEST
 
-  strip $DEST/gk
-  strip $DEST/goalc
-  strip $DEST/extractor
-
   chmod +x $DEST/gk
   chmod +x $DEST/goalc
   chmod +x $DEST/extractor
@@ -36,4 +32,4 @@ cp -r $SOURCE/decompiler/config $DEST/data/decompiler/
 cp -r $SOURCE/goal_src $DEST/data
 cp -r $SOURCE/game/assets $DEST/data/game/
 cp -r $SOURCE/game/graphics/opengl_renderer/shaders $DEST/data/game/graphics/opengl_renderer
-cp -r $SOURCE/custom_levels $DEST/data
+cp -r $SOURCE/custom_assets $DEST/data

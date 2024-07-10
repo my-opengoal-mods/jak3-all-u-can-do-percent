@@ -23,14 +23,15 @@
 #include "game/graphics/gfx.h"
 #include "game/graphics/opengl_renderer/OpenGLRenderer.h"
 #include "game/graphics/opengl_renderer/debug_gui.h"
+#include "game/graphics/screenshot.h"
 #include "game/graphics/texture/TexturePool.h"
 #include "game/runtime.h"
 #include "game/sce/libscf.h"
 #include "game/system/hid/input_manager.h"
 #include "game/system/hid/sdl_util.h"
 
+#include "fmt/core.h"
 #include "third-party/SDL/include/SDL.h"
-#include "third-party/fmt/core.h"
 #include "third-party/imgui/imgui.h"
 #include "third-party/imgui/imgui_impl_opengl3.h"
 #include "third-party/imgui/imgui_impl_sdl.h"
@@ -43,7 +44,9 @@
 
 constexpr bool run_dma_copy = false;
 
-constexpr PerGameVersion<int> fr3_level_count(jak1::LEVEL_TOTAL, jak2::LEVEL_TOTAL);
+constexpr PerGameVersion<int> fr3_level_count(jak1::LEVEL_TOTAL,
+                                              jak2::LEVEL_TOTAL,
+                                              jak3::LEVEL_TOTAL);
 
 struct GraphicsData {
   // vsync
@@ -71,7 +74,7 @@ struct GraphicsData {
   FrameLimiter frame_limiter;
   Timer engine_timer;
   double last_engine_time = 1. / 60.;
-  float pmode_alp = 0.f;
+  float pmode_alp = 1.f;
 
   std::string imgui_log_filename, imgui_filename;
   GameVersion version;
@@ -83,7 +86,7 @@ struct GraphicsData {
             file_util::get_jak_project_dir() / "out" / game_version_names[version] / "fr3",
             fr3_level_count[version])),
         ogl_renderer(texture_pool, loader, version),
-        debug_gui(version),
+        debug_gui(),
         version(version) {}
 };
 
@@ -98,7 +101,7 @@ static int gl_init(GfxGlobalSettings& settings) {
     auto p = scoped_prof("startup::sdl::init_sdl");
     // remove SDL garbage from hooking signal handler.
     SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
       sdl_util::log_error("Could not initialize SDL, exiting");
       dialogs::create_error_message_dialog("Critical Error Encountered",
                                            "Could not initialize SDL, exiting");
@@ -128,8 +131,9 @@ static int gl_init(GfxGlobalSettings& settings) {
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     }
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+#ifndef __APPLE__
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-#ifdef __APPLE__
+#else
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 #endif
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -326,7 +330,7 @@ GLDisplay::GLDisplay(SDL_Window* window, SDL_GLContext gl_context, bool is_main)
   m_display_manager->set_input_manager(m_input_manager);
   // Register commands
   m_input_manager->register_command(CommandBinding::Source::KEYBOARD,
-                                    CommandBinding(SDLK_F12, [&]() {
+                                    CommandBinding(Gfx::g_debug_settings.hide_imgui_key, [&]() {
                                       if (!Gfx::g_debug_settings.ignore_hide_imgui) {
                                         set_imgui_visible(!is_imgui_visible());
                                       }
@@ -396,15 +400,20 @@ void render_game_frame(int game_width,
       options.quick_screenshot = true;
       options.screenshot_path = file_util::make_screenshot_filepath(g_game_version);
     }
-    if (g_gfx_data->debug_gui.get_screenshot_flag()) {
+    // note : it's important we call get_screenshot_flag first because it modifies state
+    if (g_gfx_data->debug_gui.get_screenshot_flag() || g_want_screenshot) {
+      g_want_screenshot = false;
       options.save_screenshot = true;
-      options.game_res_w = g_gfx_data->debug_gui.screenshot_width;
-      options.game_res_h = g_gfx_data->debug_gui.screenshot_height;
+      options.internal_res_screenshot = true;
+      options.game_res_w = g_screen_shot_settings->width;
+      options.game_res_h = g_screen_shot_settings->height;
+      options.window_framebuffer_width = options.game_res_w;
+      options.window_framebuffer_height = options.game_res_h;
       options.draw_region_width = options.game_res_w;
       options.draw_region_height = options.game_res_h;
-      options.msaa_samples = g_gfx_data->debug_gui.screenshot_samples;
-      options.screenshot_path = file_util::make_screenshot_filepath(
-          g_game_version, g_gfx_data->debug_gui.screenshot_name());
+      options.msaa_samples = g_screen_shot_settings->msaa;
+      options.screenshot_path =
+          file_util::make_screenshot_filepath(g_game_version, get_screen_shot_name());
     }
 
     options.draw_small_profiler_window =
@@ -439,23 +448,6 @@ void render_game_frame(int game_width,
   }
 }
 
-void update_global_profiler() {
-  if (g_gfx_data->debug_gui.dump_events) {
-    prof().set_enable(false);
-    g_gfx_data->debug_gui.dump_events = false;
-
-    // TODO - the file rotation code had an infinite loop here if it couldn't find anything
-    // matching the format
-    //
-    // Does the existing log rotation code have that problem?
-
-    auto file_path = file_util::get_jak_project_dir() / "profile_data" /
-                     fmt::format("prof-{}.json", str_util::current_local_timestamp_no_colons());
-    file_util::create_dir_if_needed_for_file(file_path);
-    prof().dump_to_json(file_path.string());
-  }
-}
-
 void GLDisplay::process_sdl_events() {
   SDL_Event evt;
   while (SDL_PollEvent(&evt) != 0) {
@@ -486,8 +478,8 @@ void GLDisplay::render() {
   // Before we process the current frames SDL events we for keyboard/mouse button inputs.
   //
   // This technically means that keyboard/mouse button inputs will be a frame behind but the
-  // event-based code is buggy and frankly not worth stressing over.  Leaving this as a note incase
-  // someone complains. Binding handling is still taken care of by the event code though.
+  // event-based code is limiting (there aren't enough events to achieve a totally stateless
+  // approach). Binding handling is still taken care of by the event code though.
   {
     auto p = scoped_prof("sdl-input-monitor-poll-for-kb-mouse");
     ImGuiIO& io = ImGui::GetIO();
@@ -594,7 +586,6 @@ void GLDisplay::render() {
   // Start timing for the next frame.
   g_gfx_data->debug_gui.start_frame();
   prof().instant_event("ROOT");
-  update_global_profiler();
 
   // toggle even odd and wake up engine waiting on vsync.
   // TODO: we could play with moving this earlier, right after the final bucket renderer.
@@ -715,6 +706,10 @@ void gl_set_levels(const std::vector<std::string>& levels) {
   g_gfx_data->loader->set_want_levels(levels);
 }
 
+void gl_set_active_levels(const std::vector<std::string>& levels) {
+  g_gfx_data->loader->set_active_levels(levels);
+}
+
 void gl_set_pmode_alp(float val) {
   g_gfx_data->pmode_alp = val;
 }
@@ -729,6 +724,7 @@ const GfxRendererModule gRendererOpenGL = {
     gl_texture_upload_now,  // texture_upload_now
     gl_texture_relocate,    // texture_relocate
     gl_set_levels,          // set_levels
+    gl_set_active_levels,   // set_active_levels
     gl_set_pmode_alp,       // set_pmode_alp
     GfxPipeline::OpenGL,    // pipeline
     "OpenGL 4.3"            // name

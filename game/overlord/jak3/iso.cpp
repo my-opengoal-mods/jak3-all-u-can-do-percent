@@ -1792,5 +1792,5 @@ void set_active_b(ISO_Hdr* cmd, int val) {
 void set_active_c(ISO_Hdr* cmd, int val) {
   cmd->active_c = val;
 }
-
+  
 }  // namespace jak3

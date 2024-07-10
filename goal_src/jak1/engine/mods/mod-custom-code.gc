@@ -29,6 +29,11 @@
         (input-display-off)
         )
 
+      ;; ensure orb-placer is spawned/killed as requested, debug menu is updated
+      (when *debug-segment*
+        (orb-placer-maintenance)
+        )
+
       (none)
       )
 
@@ -108,7 +113,10 @@
       )
 
     (defun runs-on-jak-spawn ()
-      ;; Code here runs every time jak spawns (loading a file new game or death)   
+      ;; Code here runs every time jak spawns (loading a file new game or death)
+      
+      ;;uncomment this to use custom music for custom levels - the function is in mod-common-functions.gc
+      ;;(process-spawn-function process music-manager-proc)
       (none)
       )
 

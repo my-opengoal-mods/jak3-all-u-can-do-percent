@@ -285,7 +285,7 @@ void Merc2::model_mod_draws(int num_effects,
       // this lock is not ideal, and can block the rendering thread while blerc_execute runs,
       // which can take up to 2ms on really blerc-heavy scenes
       std::unique_lock<std::mutex> lk(g_merc_data_mutex);
-      int frags_done = 0;
+      [[maybe_unused]] int frags_done = 0;
       auto p = scoped_prof("vert-math");
 
       // loop over fragments
@@ -538,8 +538,9 @@ void Merc2::handle_pc_model(const DmaTransfer& setup,
   u64 current_ignore_alpha_bits = flags->ignore_alpha_mask;  // shader settings
   u64 current_effect_enable_bits = flags->enable_mask;       // mask for game to disable an effect
   bool model_uses_mod = flags->bitflags & 1;  // if we should update vertices from game.
-  bool model_disables_fog = (flags->bitflags & 2);
+  bool model_disables_fog = flags->bitflags & 2;
   bool model_uses_pc_blerc = flags->bitflags & 4;
+  bool model_disables_envmap = flags->bitflags & 8;
   input_data += 32;
 
   float blerc_weights[kMaxBlerc];
@@ -570,7 +571,7 @@ void Merc2::handle_pc_model(const DmaTransfer& setup,
   // stats
   stats->num_models++;
   for (const auto& effect : model_ref->model->effects) {
-    bool envmap = effect.has_envmap;
+    bool envmap = effect.has_envmap && !model_disables_envmap;
     stats->num_effects++;
     stats->num_predicted_draws += effect.all_draws.size();
     if (envmap) {
@@ -623,7 +624,7 @@ void Merc2::handle_pc_model(const DmaTransfer& setup,
     bool ignore_alpha = !!(current_ignore_alpha_bits & (1ull << ei));
     auto& effect = model->effects[ei];
 
-    bool should_envmap = effect.has_envmap;
+    bool should_envmap = effect.has_envmap && !model_disables_envmap;
     bool should_mod = (model_uses_pc_blerc || model_uses_mod) && effect.has_mod_draw;
 
     if (should_mod) {
@@ -948,7 +949,7 @@ void Merc2::handle_merc_chain(DmaFollower& dma,
 
   auto init = dma.read_and_advance();
   int skip_count = 2;
-  if (render_state->version == GameVersion::Jak2) {
+  if (render_state->version >= GameVersion::Jak2) {
     skip_count = 1;
   }
 
@@ -1092,6 +1093,7 @@ Merc2::Draw* Merc2::alloc_normal_draw(const tfrag3::MercDraw& mdraw,
   draw->first_bone = first_bone;
   draw->light_idx = lights;
   draw->num_triangles = mdraw.num_triangles;
+  draw->no_strip = mdraw.no_strip;
   if (ignore_alpha) {
     draw->flags |= IGNORE_ALPHA;
   }
@@ -1282,8 +1284,8 @@ void Merc2::do_draws(const Draw* draw_array,
     prof.add_tri(draw.num_triangles);
     glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_bones_buffer,
                       sizeof(math::Vector4f) * draw.first_bone, 128 * sizeof(ShaderMercMat));
-    glDrawElements(GL_TRIANGLE_STRIP, draw.index_count, GL_UNSIGNED_INT,
-                   (void*)(sizeof(u32) * draw.first_index));
+    glDrawElements(draw.no_strip ? GL_TRIANGLES : GL_TRIANGLE_STRIP, draw.index_count,
+                   GL_UNSIGNED_INT, (void*)(sizeof(u32) * draw.first_index));
   }
 
   if (!normal_vtx_buffer_bound) {

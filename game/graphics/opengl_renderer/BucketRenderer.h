@@ -26,8 +26,8 @@ class EyeRenderer;
 struct SharedRenderState {
   explicit SharedRenderState(std::shared_ptr<TexturePool> _texture_pool,
                              std::shared_ptr<Loader> _loader,
-                             GameVersion version)
-      : shaders(version), texture_pool(_texture_pool), loader(_loader) {}
+                             GameVersion _version)
+      : shaders(_version), texture_pool(_texture_pool), loader(_loader), version(_version) {}
   ShaderLibrary shaders;
   std::shared_ptr<TexturePool> texture_pool;
   std::shared_ptr<Loader> loader;
@@ -55,12 +55,6 @@ struct SharedRenderState {
 
   // including transformation, rotation, perspective
   math::Vector4f camera_matrix[4];
-
-  // including transformation, rotation
-  math::Vector4f camera_no_persp[4];
-
-  // just the perspective
-  math::Vector4f camera_persp[4];
   math::Vector4f camera_hvdf_off;
   math::Vector4f camera_fog;
   math::Vector4f camera_pos;
@@ -86,9 +80,6 @@ struct SharedRenderState {
   int draw_region_h = 0;
   int draw_offset_x = 0;
   int draw_offset_y = 0;
-
-  // the FBO for blit buffer
-  const Fbo* back_fbo = nullptr;
 
   int bucket_for_vis_copy = 0;
   int num_vis_to_copy = 0;

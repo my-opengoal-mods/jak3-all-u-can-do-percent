@@ -28,10 +28,30 @@ std::vector<std::string> jak2_slots = {
     "cas-conveyor-dest-01",
     "cas-conveyor-dest-02",
     "cas-conveyor-dest-03",
+    "security-env-dest",
+    "security-dot-dest",
+    "waterfall-dest",
+    "dig-lava-01-dest",
+    "stdmb-energy-wall-01-dest",
+    "robotank-tread-l-dest",
+    "robotank-tread-r-dest",
+    "fort-roboscreen-dest",
+    "squid-env-rim-dest",
+    "krew-holo-dest",
+    "cas-toxic-slime-dest",
+    "cas-toxic-slime-scroll-dest",
 };
 
-}
+std::vector<std::string> jak3_slots = {
+    "skull-gem-dest", "jakc-arm", "jakc-eyebrow", "jakc-face", "jakc-finger", "jakc-hair",
+};
+
+}  // namespace
 
 const std::vector<std::string>& jak2_animated_texture_slots() {
   return jak2_slots;
+}
+
+const std::vector<std::string>& jak3_animated_texture_slots() {
+  return jak3_slots;
 }

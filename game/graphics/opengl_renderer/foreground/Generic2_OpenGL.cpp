@@ -1,6 +1,7 @@
 #include "common/log/log.h"
 
 #include "Generic2.h"
+#include "game/graphics/gfx.h"
 
 void Generic2::opengl_setup(ShaderLibrary& shaders) {
   // create OpenGL objects
@@ -249,7 +250,7 @@ void Generic2::setup_opengl_tex(u16 unit,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   }
 
-  if (render_state->version == GameVersion::Jak2 && tbp_to_lookup == 1216) {
+  if (render_state->version >= GameVersion::Jak2 && tbp_to_lookup == 1216) {
     glUniform1ui(m_ogl.warp_sample_mode, 1);
     // warp shader uses region clamp, which isn't supported by DrawMode.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

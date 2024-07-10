@@ -29,6 +29,8 @@
   "dma-buffer.o"
   "dma-bucket.o"
   "dma-disasm.o"
+  "statistics-h.o" ;; added
+  "pc-cheats.o" ;; added
   "pckernel-h.o" ;; added
   "pckernel-impl.o" ;; added
   "pc-debug-common.o" ;; added
@@ -161,6 +163,8 @@
   "cam-update-h.o"
   "hud-h.o"
   "progress-h.o"
+  "progress-h-pc.o" ;; added
+  "progress-generic-h-pc.o" ;; added
   "rpc-h.o"
   "path-h.o"
   "nav-mesh-h.o"
@@ -236,8 +240,8 @@
   "settings.o"
   "autosplit-h.o" ;; added
   "autosplit.o" ;; added
+  "popup-menu-h.o" ;; added
   "speedruns-h.o" ;; added
-  "speedruns.o" ;; added
   "mood-tables.o"
   "mood-tables2.o"
   "mood.o"
@@ -325,6 +329,8 @@
   "board-states.o"
   "mech-h.o"
   "menu.o"
+  "popup-menu.o" ;; added
+  "speedruns.o" ;; added
   "drawable.o"
   "drawable-group.o"
   "drawable-inline-array.o"
@@ -332,11 +338,12 @@
   "prototype.o"
   "main-collide.o"
   "video.o"
+  "capture-pc.o" ;; added
   "pckernel-common.o" ;; added
   "pckernel.o" ;; added
   "subtitle2-h.o" ;; added
   "subtitle2.o" ;; added
-  "input-display.o" ;;added
+  "input-display.o" ;;added ;;mod-base-change
   "main.o"
   "collide-cache.o"
   "collide-debug.o"
@@ -358,8 +365,13 @@
   "hud.o"
   "hud-classes.o"
   "progress-static.o"
+  "progress-static-pc.o" ;; added
   "progress.o"
+  "progress-pc.o" ;; added
+  "progress-generic-pc.o" ;; added
   "progress-draw.o"
+  "progress-draw-pc.o" ;; added
+  "progress-generic-draw-pc.o" ;; added
   "ocean.o"
   "ocean-vu0.o"
   "ocean-texture.o"
@@ -425,6 +437,8 @@
   "enemy-h.o"
   "nav-enemy-h.o"
   "rigid-body-h.o"
+  "damage-number.o" ;; added
+  "statistics.o" ;; added
   "enemy.o"
   "nav-enemy.o"
   "base-plat.o"
@@ -452,7 +466,9 @@
   "elec-gate.o"
   "cty-guard-turret-button.o"
   "entity-debug.o" ;; added
-  "mod-settings.o" ;; added
+  "mod-settings.o" ;; added ;;mod-base-change
   "mod-common-functions.o" ;; added
+  "orb-placer.o"  ;; added
   "mod-custom-code.o" ;; added
+  "mod-debug.o" ;; added
  ))

@@ -35,30 +35,31 @@ FramebufferTexturePair::FramebufferTexturePair(int w, int h, u64 texture_format,
     glDrawBuffers(1, draw_buffers);
     auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
+      lg::error("Failed to setup framebuffer texture pair: {} {} ", w, h);
       switch (status) {
         case GL_FRAMEBUFFER_UNDEFINED:
-          printf("GL_FRAMEBUFFER_UNDEFINED\n");
+          lg::error("GL_FRAMEBUFFER_UNDEFINED\n");
           break;
         case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-          printf("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");
+          lg::error("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");
           break;
         case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-          printf("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n");
+          lg::error("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n");
           break;
         case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-          printf("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\n");
+          lg::error("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\n");
           break;
         case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-          printf("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\n");
+          lg::error("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\n");
           break;
         case GL_FRAMEBUFFER_UNSUPPORTED:
-          printf("GL_FRAMEBUFFER_UNSUPPORTED\n");
+          lg::error("GL_FRAMEBUFFER_UNSUPPORTED\n");
           break;
         case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-          printf("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE\n");
+          lg::error("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE\n");
           break;
         case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
-          printf("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS\n");
+          lg::error("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS\n");
           break;
       }
 
@@ -204,6 +205,25 @@ void FramebufferCopier::copy_now(int render_fb_w, int render_fb_h, GLuint render
                     0,                    // dstY0
                     m_fbo_width,          // dstX1
                     m_fbo_height,         // dstY1
+                    GL_COLOR_BUFFER_BIT,  // mask
+                    GL_NEAREST            // filter
+  );
+
+  glBindFramebuffer(GL_FRAMEBUFFER, render_fb);
+}
+
+void FramebufferCopier::copy_back_now(int render_fb_w, int render_fb_h, GLuint render_fb) {
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_fb);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+
+  glBlitFramebuffer(0,                    // srcX0
+                    0,                    // srcY0
+                    m_fbo_width,          // srcX1
+                    m_fbo_height,         // srcY1
+                    0,                    // dstX0
+                    0,                    // dstY0
+                    render_fb_w,          // dstX1
+                    render_fb_h,          // dstY1
                     GL_COLOR_BUFFER_BIT,  // mask
                     GL_NEAREST            // filter
   );
