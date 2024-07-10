@@ -186,8 +186,11 @@ void InitISOFS() {
   if (vagdir_file) {
     int load_status = LoadISOFileToIOP(vagdir_file, &g_VagDir, sizeof(g_VagDir));
     if (load_status) {
-      // ASSERT(g_VagDir.vag_magic_1 == 0x41574756);
-      // ASSERT(g_VagDir.vag_magic_2 == 0x52494444);
+      if (g_VagDir.vag_magic_1 != 0x41574756 || g_VagDir.vag_magic_2 != 0x52494444) {
+        lg::warn("vag_magic_1: {},  vag_magic_2: {}", g_VagDir.vag_magic_1, g_VagDir.vag_magic_2);
+      }
+      ASSERT(g_VagDir.vag_magic_1 == 0x41574756);
+      ASSERT(g_VagDir.vag_magic_2 == 0x52494444);
     } else {
       lg::warn("Failed to load vagdir file");
       g_VagDir.num_entries = 0;
