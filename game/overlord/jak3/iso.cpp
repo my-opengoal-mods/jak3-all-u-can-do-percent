@@ -186,6 +186,9 @@ void InitISOFS() {
   if (vagdir_file) {
     int load_status = LoadISOFileToIOP(vagdir_file, &g_VagDir, sizeof(g_VagDir));
     if (load_status) {
+      if (g_VagDir.vag_magic_1 != 0x41574756 || g_VagDir.vag_magic_2 != 0x52494444) {
+        lg::warn("vag_magic_1: {},  vag_magic_2: {}", g_VagDir.vag_magic_1, g_VagDir.vag_magic_2);
+      }
       ASSERT(g_VagDir.vag_magic_1 == 0x41574756);
       ASSERT(g_VagDir.vag_magic_2 == 0x52494444);
     } else {
@@ -788,7 +791,7 @@ void ProcessMusic() {
       vsd.art_load = 0;
       vsd.movie_art_load = 0;
       vsd.sound_handler = 0;
-      ovrld_log(LogCategory::VAG_SETUP, "ProcessMusic is changing the music to {}", vsd.name);
+      // ovrld_log(LogCategory::VAG_SETUP, "ProcessMusic is changing the music to {}", vsd.name);
       PlayMusicStream(&vsd);
     }
   }
@@ -1792,5 +1795,5 @@ void set_active_b(ISO_Hdr* cmd, int val) {
 void set_active_c(ISO_Hdr* cmd, int val) {
   cmd->active_c = val;
 }
-
+  
 }  // namespace jak3
