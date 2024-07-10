@@ -788,7 +788,7 @@ void ProcessMusic() {
       vsd.art_load = 0;
       vsd.movie_art_load = 0;
       vsd.sound_handler = 0;
-      ovrld_log(LogCategory::VAG_SETUP, "ProcessMusic is changing the music to {}", vsd.name);
+      // ovrld_log(LogCategory::VAG_SETUP, "ProcessMusic is changing the music to {}", vsd.name);
       PlayMusicStream(&vsd);
     }
   }
