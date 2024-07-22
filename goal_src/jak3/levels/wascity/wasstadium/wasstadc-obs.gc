@@ -294,12 +294,12 @@
 (defstate active (wstd-fight-plat-box)
   :virtual #t
   :event (behavior ((proc process) (argc int) (message symbol) (block event-message-block))
-      (task-node-close! (game-task-node arena-fight-1-fight) 'event)
+
     (case message
       (('crate)
        (cond
          ((wstd-fight-plat-box-method-39 self)
-         (task-node-close! (game-task-node arena-fight-1-fight) 'event)
+
           (go-virtual open)
           #t
           )
