@@ -214,7 +214,7 @@ int main(int argc, char** argv) {
   }
   if (flag_runall) {
     flag_extract = true;
-    flag_decompile = true;
+    flag_decompile = false;
     flag_compile = true;
     flag_play = true;
   }
@@ -361,17 +361,17 @@ int main(int argc, char** argv) {
     }
   }
 
-  if (flag_decompile) {
-    try {
-      const auto status_code = decompile(iso_data_path, data_subfolder, decomp_config_override);
-      if (status_code != ExtractorErrorCode::SUCCESS) {
-        return static_cast<int>(status_code);
-      }
-    } catch (std::exception& e) {
-      lg::error("Error during decompile: {}", e.what());
-      return static_cast<int>(ExtractorErrorCode::DECOMPILATION_GENERIC_ERROR);
-    }
-  }
+  // if (flag_decompile) {
+  //   try {
+  //     const auto status_code = decompile(iso_data_path, data_subfolder, decomp_config_override);
+  //     if (status_code != ExtractorErrorCode::SUCCESS) {
+  //       return static_cast<int>(status_code);
+  //     }
+  //   } catch (std::exception& e) {
+  //     lg::error("Error during decompile: {}", e.what());
+  //     return static_cast<int>(ExtractorErrorCode::DECOMPILATION_GENERIC_ERROR);
+  //   }
+  // }
 
   if (flag_compile) {
     const auto status_code = compile(iso_data_path, data_subfolder);
