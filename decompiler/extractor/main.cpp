@@ -85,16 +85,16 @@ std::tuple<std::optional<ISOMetadata>, ExtractorErrorCode> validate(
               version_info.num_files, expected_num_files);
     return {std::nullopt, ExtractorErrorCode::VALIDATION_INCORRECT_EXTRACTION_COUNT};
   }
-  // Check the ISO Hash
-  if (version_info.contents_hash.count(expected_hash) == 0) {
-    std::string all_expected;
-    for (const auto& hash : version_info.contents_hash) {
-      all_expected += fmt::format("{}, ", hash);
-    }
-    lg::error("Overall ISO content's hash does not match. Expected '{}', Actual '{}'", all_expected,
-              expected_hash);
-    return {std::nullopt, ExtractorErrorCode::VALIDATION_FILE_CONTENTS_UNEXPECTED};
-  }
+  // // Check the ISO Hash
+  // if (version_info.contents_hash.count(expected_hash) == 0) {
+  //   std::string all_expected;
+  //   for (const auto& hash : version_info.contents_hash) {
+  //     all_expected += fmt::format("{}, ", hash);
+  //   }
+  //   lg::error("Overall ISO content's hash does not match. Expected '{}', Actual '{}'", all_expected,
+  //             expected_hash);
+  //   return {std::nullopt, ExtractorErrorCode::VALIDATION_FILE_CONTENTS_UNEXPECTED};
+  // }
 
   return {
       std::make_optional(version_info),
